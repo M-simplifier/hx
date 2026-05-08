@@ -62,6 +62,7 @@ tests =
     , TestCase "run help" testRunHelp
     , TestCase "build dry-run release profile" testBuildDryRunRelease
     , TestCase "run dry-run server profile" testRunDryRunServer
+    , TestCase "run auto-selects sole executable over test suite" testRunAutoSelectsSoleExecutable
     , TestCase "run dry-run server profile with extra RTS args" testRunDryRunServerWithAdditionalRts
     , TestCase "run rejects mixed RTS input styles" testRunRejectsMixedRtsInputs
     , TestCase "init plan JSON" testInitPlanJson
@@ -127,6 +128,14 @@ testRunDryRunServer =
         assertExit "run dry-run exit" ExitSuccess (capturedExit captured)
         assertContains "run dry-run runtime summary" "Runtime: profile defaults via `-with-rtsopts`: -N" (capturedStdout captured)
         assertContains "run dry-run command" "--ghc-option=-with-rtsopts=-N" (capturedStdout captured)
+
+testRunAutoSelectsSoleExecutable :: IO ()
+testRunAutoSelectsSoleExecutable =
+    withProjectFiles sampleProjectWithTestFiles $ \projectDir -> do
+        captured <- withCurrentDirectory projectDir (captureAction (runRun ["--dry-run"]))
+        assertExit "run auto-select exit" ExitSuccess (capturedExit captured)
+        assertContains "run auto-select target" "Target: auto-selecting `run-sample`" (capturedStdout captured)
+        assertContains "run auto-select command" " run-sample --dry-run" (capturedStdout captured)
 
 testRunDryRunServerWithAdditionalRts :: IO ()
 testRunDryRunServerWithAdditionalRts =
@@ -335,6 +344,14 @@ sampleProjectFiles =
     , ("app/Main.hs", sampleMainContents)
     ]
 
+sampleProjectWithTestFiles :: [(FilePath, String)]
+sampleProjectWithTestFiles =
+    [ ("cabal.project", "packages: .\n")
+    , ("run-sample.cabal", samplePackageWithTestContents)
+    , ("app/Main.hs", sampleMainContents)
+    , ("test/Main.hs", "main :: IO ()\nmain = putStrLn \"ok\"\n")
+    ]
+
 pkgConfigProjectFiles :: [(FilePath, String)]
 pkgConfigProjectFiles =
     [ ("cabal.project", "packages: .\n")
@@ -373,6 +390,28 @@ sampleMainContents =
         , ""
         , "main :: IO ()"
         , "main = putStrLn \"run-sample\""
+        ]
+
+samplePackageWithTestContents :: String
+samplePackageWithTestContents =
+    unlines
+        [ "cabal-version: 3.8"
+        , "name: run-sample"
+        , "version: 0.1.0.0"
+        , "build-type: Simple"
+        , ""
+        , "executable run-sample"
+        , "  main-is: Main.hs"
+        , "  hs-source-dirs: app"
+        , "  build-depends: base >=4.18 && <4.22"
+        , "  default-language: GHC2021"
+        , ""
+        , "test-suite run-sample-test"
+        , "  type: exitcode-stdio-1.0"
+        , "  main-is: Main.hs"
+        , "  hs-source-dirs: test"
+        , "  build-depends: base >=4.18 && <4.22"
+        , "  default-language: GHC2021"
         ]
 
 withMockToolPath :: [String] -> [(String, String)] -> IO a -> IO a

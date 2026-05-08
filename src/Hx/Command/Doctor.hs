@@ -1236,9 +1236,18 @@ preferredFastLinkerName snapshot =
 
 defaultRunnableTargetArg :: DiagnosticSnapshot -> Maybe String
 defaultRunnableTargetArg snapshot =
-    case projectRunnableComponents (snapshotProjectDiagnostics snapshot) of
+    case executableComponents of
         [component] -> Just (runnableName component)
+        [] ->
+            case runnableComponents of
+                [component] -> Just (runnableName component)
+                _ -> Nothing
         _ -> Nothing
+  where
+    runnableComponents =
+        projectRunnableComponents (snapshotProjectDiagnostics snapshot)
+    executableComponents =
+        filter ((== RunnableExecutable) . runnableType) runnableComponents
 
 renderRunnableTargets :: DiagnosticSnapshot -> String
 renderRunnableTargets snapshot =
