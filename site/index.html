@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>hx - Haskell command plane</title>
+    <meta name="description" content="hx is a Cabal-first command plane for Haskell project lifecycle work.">
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='10' fill='%231f7a64'/%3E%3Ctext x='32' y='40' text-anchor='middle' font-size='24' font-family='monospace' fill='white'%3Ehx%3C/text%3E%3C/svg%3E">
+    <link rel="stylesheet" href="./styles.css">
+  </head>
+  <body>
+    <header class="site-header">
+      <a class="brand" href="./">hx</a>
+      <nav aria-label="Primary">
+        <a href="#start">Start</a>
+        <a href="#ai">AI</a>
+        <a href="#status">Status</a>
+        <a href="https://github.com/M-simplifier/hx">GitHub</a>
+      </nav>
+    </header>
+
+    <main>
+      <section class="hero">
+        <div class="hero-copy">
+          <p class="eyebrow">Cabal-first. AI-readable. Pre-beta.</p>
+          <h1>Haskell command plane.</h1>
+          <p class="lead">
+            <code>hx</code> connects project creation, dependency changes, execution,
+            diagnostics, and CI evidence without replacing Cabal.
+          </p>
+          <div class="actions">
+            <a class="button primary" href="#start">Get started</a>
+            <a class="button" href="https://github.com/M-simplifier/hx/blob/main/STATUS.md">Read status</a>
+          </div>
+        </div>
+        <pre class="terminal" aria-label="hx lifecycle example"><code>hx init my-app --kind=cli
+cd my-app
+hx add text --plan
+hx add text --apply
+hx run
+hx ci --json</code></pre>
+      </section>
+
+      <section id="start" class="band">
+        <div class="section-head">
+          <p class="eyebrow">Start</p>
+          <h2>Use it from source today.</h2>
+        </div>
+        <pre class="wide-code"><code>cabal install exe:hx --installdir="$HOME/.local/bin" --overwrite-policy=always
+hx help
+hx doctor
+hx ci</code></pre>
+      </section>
+
+      <section id="ai" class="grid-section">
+        <div>
+          <p class="eyebrow">AI operation</p>
+          <h2>Plans before mutation.</h2>
+          <p>
+            Mutating commands expose explicit plans, side effects, and evidence
+            commands. AI operators can inspect JSON before applying changes.
+          </p>
+        </div>
+        <pre class="wide-code"><code>hx status --json
+hx add aeson --target=exe:server --plan --json
+hx doctor --json</code></pre>
+      </section>
+
+      <section id="status" class="band">
+        <div class="section-head">
+          <p class="eyebrow">Boundary</p>
+          <h2>Pre-beta means narrow claims.</h2>
+        </div>
+        <ul class="status-list">
+          <li>Implemented: init, status, add, run, test, doctor, ci.</li>
+          <li>Claimed: Cabal-first lifecycle command plane.</li>
+          <li>Not claimed: Cabal replacement, Hackage replacement, Stack-first support, production toolchain management.</li>
+        </ul>
+      </section>
+    </main>
+  </body>
+</html>

@@ -1,0 +1,5 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Current status
+    url: https://github.com/M-simplifier/hx/blob/main/STATUS.md
+    about: Check the current public claim boundary before filing broad requests.
