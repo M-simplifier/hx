@@ -14,6 +14,7 @@ hx add text --apply
 hx run
 hx test
 hx doctor
+hx linker status
 hx ci
 ```
 
@@ -22,6 +23,7 @@ The same model is meant to work in existing Cabal projects:
 ```bash
 hx status
 hx add aeson --target=exe:my-app --plan --json
+hx linker use auto --plan --json
 hx ci --json
 ```
 
@@ -37,6 +39,7 @@ responsibility is split across them.
 - inspect the project model
 - plan and apply dependency changes
 - run, test, diagnose, and verify
+- detect, select, and persist fast-linker settings
 - expose stable machine-readable plans for AI operators
 
 The internal product shape is:
@@ -60,6 +63,9 @@ Implemented in this pre-beta:
   plans or applies Cabal dependency edits
 - `hx doctor`
   reports host toolchain, linker, native dependency, and project signals
+- `hx linker`
+  inspects the active linker plan and can write an hx-managed
+  `cabal.project.local` block for local fast-linker use
 - `hx build`
   runs profile-aware `cabal build`
 - `hx run`
@@ -74,6 +80,8 @@ Machine-readable outputs currently exist for:
 ```bash
 hx status --json
 hx doctor --json
+hx linker status --json
+hx linker use auto --plan --json
 hx init my-app --plan --json
 hx add text --plan --json
 hx ci --json
@@ -96,7 +104,33 @@ Then verify:
 ```bash
 hx help
 hx doctor
+hx linker status
 hx ci
+```
+
+## Fast Linkers
+
+`hx build`, `hx run`, `hx ci`, and `hx test` share the same linker preflight.
+If the current project has no explicit linker selection and `mold` or `ld.lld`
+is on `PATH`, `hx` passes the matching GHC option for that invocation.
+
+Inspect the current decision:
+
+```bash
+hx linker status
+```
+
+Persist the local decision for raw Cabal commands too:
+
+```bash
+hx linker use auto --apply
+```
+
+That writes an hx-managed block to `cabal.project.local`, which should stay
+local to the machine. Remove it with:
+
+```bash
+hx linker clear --apply
 ```
 
 ## Support Matrix

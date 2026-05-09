@@ -31,6 +31,7 @@ Current examples:
 
 - `hx init <name> --plan`
 - `hx add <package> --plan`
+- `hx linker use auto --plan`
 
 Plans are rendered for humans and as versioned JSON for AI operators.
 
@@ -40,16 +41,28 @@ Apply steps should be narrow and explainable:
 
 - generated project files for `hx init`
 - Cabal dependency edits for `hx add`
+- hx-managed local linker settings in `cabal.project.local` for `hx linker`
 
 The current dependency edit is conservative and line-oriented. This is an
 acceptable pre-beta wedge, not the final Cabal formatting engine.
+
+## Linker Plan
+
+`hx` treats fast-linker use as an execution plan, not as hidden global state.
+`hx build`, `hx run`, `hx ci`, and `hx test` share the same preflight:
+
+- respect explicit project linker settings
+- fail early when a configured linker is missing
+- auto-select `mold` or `ld.lld` per invocation when no project setting exists
+- expose `hx linker use ... --apply` for local persistence through
+  `cabal.project.local`
 
 ## Evidence
 
 Verification commands should be visible. Current evidence commands include:
 
-- `cabal build all`
-- `cabal test all`
+- `hx ci`
+- `hx test`
 - `cabal test hx-smoke`
 - `scripts/public-ci.sh`
 

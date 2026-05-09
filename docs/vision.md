@@ -29,6 +29,7 @@ cd my-app
 hx add text --apply
 hx run
 hx test
+hx linker status
 hx ci
 ```
 
@@ -38,6 +39,7 @@ Existing project:
 hx status
 hx add aeson --target=exe:server --plan --json
 hx doctor --json
+hx linker use auto --plan --json
 hx ci --json
 ```
 
@@ -49,6 +51,7 @@ The first public version claims only a Cabal-first lifecycle wedge:
 - inspect Cabal packages and components
 - plan/apply simple dependency edits
 - run build/test/doctor/ci flows
+- detect and apply fast-linker plans without forcing global toolchain changes
 - expose AI-readable plans and diagnostics
 
 It does not claim package registry replacement, Cabal replacement, Stack-first

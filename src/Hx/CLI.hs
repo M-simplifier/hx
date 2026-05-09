@@ -6,6 +6,7 @@ import Hx.Command.Build (runBuild)
 import Hx.Command.Ci (runCi, runTest)
 import Hx.Command.Doctor (runDoctor, runDoctorJson)
 import Hx.Command.Init (runInit)
+import Hx.Command.Linker (runLinker)
 import Hx.Command.Run (runRun)
 import Hx.Command.Status (runStatus)
 import Paths_hx (version)
@@ -23,6 +24,7 @@ run = do
         "status" : statusArgs -> runStatus statusArgs
         "ci" : ciArgs -> runCi ciArgs
         "test" : testArgs -> runTest testArgs
+        "linker" : linkerArgs -> runLinker linkerArgs
         "build" : buildArgs -> runBuild buildArgs
         "run" : runArgs -> runRun runArgs
         ["doctor"] -> runDoctor
@@ -42,6 +44,7 @@ usage =
         , "  hx status     Inspect the current project model"
         , "  hx ci         Run the default verification flow"
         , "  hx test       Run the default test flow"
+        , "  hx linker     Inspect or persist the local linker plan"
         , "  hx build      Run cabal build with an hx profile"
         , "  hx run        Run cabal run with an hx profile"
         , "  hx doctor     Inspect the local Haskell toolchain"

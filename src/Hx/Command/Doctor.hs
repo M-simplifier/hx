@@ -1,6 +1,7 @@
 module Hx.Command.Doctor
     ( DiagnosticSnapshot (..)
     , buildPkgConfigBlocker
+    , availableFastLinkerNames
     , configuredProjectLinkers
     , buildPkgConfigWarnings
     , configuredProjectFastLinkers
@@ -1232,6 +1233,10 @@ preferredFastLinkerName snapshot =
         ]
   where
     availableFastLinkers =
+        availableFastLinkerNames snapshot
+
+availableFastLinkerNames :: DiagnosticSnapshot -> [String]
+availableFastLinkerNames snapshot =
         map (specName . toolSpec) (linkerFastCandidates (snapshotLinkerPosture snapshot))
 
 defaultRunnableTargetArg :: DiagnosticSnapshot -> Maybe String

@@ -86,6 +86,7 @@ run_step "cabal build all" cabal build all
 run_step "cabal test hx-smoke" cabal test hx-smoke
 run_step "hx status --json" "$hx_binary" status --json
 run_step "hx doctor --json" "$hx_binary" doctor --json
+run_step "hx linker status --json" "$hx_binary" linker status --json
 run_step "hx init preflight-demo --kind=cli --plan --json" "$hx_binary" init preflight-demo --kind=cli --plan --json
 run_step "hx add text --plan --json" "$hx_binary" add text --plan --json
 run_step "scripts/public-ci.sh" scripts/public-ci.sh

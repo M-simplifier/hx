@@ -9,9 +9,11 @@
 - `hx add` dependency planning and application for Cabal components
 - `hx status` project inspection
 - `hx doctor` host and project diagnostics
+- `hx linker` status plus hx-managed local fast-linker persistence
 - `hx build`, `hx run`, `hx test`, and `hx ci`
-- JSON output for project status, diagnostics, init plans, add plans, and CI/test
-  evidence
+- shared fast-linker preflight for `build`, `run`, `ci`, and `test`
+- JSON output for project status, diagnostics, linker status/plans, init plans,
+  add plans, and CI/test evidence
 - Smoke tests covering the core CLI, dry-run orchestration, dependency planning,
   dependency application, and preflight blockers
 - Public export, public audit, and public CI scripts
@@ -35,6 +37,7 @@ scripts/release-preflight.sh v0.1.0-pre.1
 - project creation
 - dependency changes
 - run/test/doctor/ci
+- fast-linker detection and local persistence
 - AI-readable operation plans
 
 ## Not Claimed
