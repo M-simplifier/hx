@@ -6,6 +6,7 @@ module Hx.Command.CabalSupport
     , decideLinkerPlan
     , fuseLdValue
     , linkerArgs
+    , linkerPlanWarnings
     , profileRuntimeDefaults
     , profileRuntimeSupportBuildArgs
     , renderLinkerPlan
@@ -121,10 +122,14 @@ runCabalPreflight snapshot =
                     <> "\n\nRun `hx doctor` for installation guidance."
                 )
         _ ->
+            let linkerPlan = decideLinkerPlan snapshot
+             in
             Right
                 CabalPreflight
-                    { preflightWarnings = buildPkgConfigWarnings snapshot
-                    , preflightLinkerPlan = decideLinkerPlan snapshot
+                    { preflightWarnings =
+                        buildPkgConfigWarnings snapshot
+                            ++ linkerPlanWarnings linkerPlan
+                    , preflightLinkerPlan = linkerPlan
                     }
 
 decideLinkerPlan :: DiagnosticSnapshot -> LinkerPlan
@@ -150,6 +155,15 @@ linkerArgs linkerPlan =
     case linkerPlan of
         AutoSelectFastLinker linkerName ->
             ["--ghc-option=-optl-fuse-ld=" <> fuseLdValue linkerName]
+        _ ->
+            []
+
+linkerPlanWarnings :: LinkerPlan -> [String]
+linkerPlanWarnings linkerPlan =
+    case linkerPlan of
+        AutoSelectFastLinker "mold" ->
+            [ "GHC may print `Warning: Couldn't figure out linker information!` when using `mold`; if Cabal exits successfully, that message is a non-fatal GHC linker-classification warning."
+            ]
         _ ->
             []
 

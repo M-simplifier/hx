@@ -37,5 +37,8 @@ today.
   heuristics are still curated rather than exhaustive
 - `hx linker use` writes only an hx-managed local block in
   `cabal.project.local`; it does not rewrite arbitrary existing linker settings
+- Some GHC versions print `Warning: Couldn't figure out linker information!`
+  when linking with `mold` even when the build succeeds; `hx` reports this as a
+  preflight warning rather than treating it as a blocker
 - Host-specific linker and native-library edge cases beyond the current fixture
   set may still appear in real projects
