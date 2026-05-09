@@ -31,6 +31,21 @@ Included:
 - `hx linker use ... --apply` and `hx linker clear --apply` for hx-managed
   `cabal.project.local` persistence
 
+## M0.6: Build Hygiene And Evidence Loop
+
+Status: proposed as the next coherent DX goal.
+
+Goal: make "rebuild this project with the right linker and tell me what
+happened" a single obvious experience for humans and AI operators.
+
+Likely work:
+
+- `hx clean` with dry-run and JSON evidence
+- `hx build --fresh`
+- `hx build --json`
+- `hx run --json`
+- elapsed-time and exit-status evidence for execution commands
+
 ## M1: Project Mutation Trust
 
 Goal: make mutating commands trustworthy across more Cabal project shapes.

@@ -9,6 +9,11 @@ tools in charge and adds a lifecycle command plane above them.
 Project Snapshot -> Plan -> Apply -> Evidence
 ```
 
+The product and command-surface philosophy is captured in
+[DX Philosophy](dx-philosophy.md). New commands should earn their place by
+reducing operational context, not by mirroring every underlying Cabal or
+toolchain command.
+
 ## Project Snapshot
 
 `Hx.Project` walks the current working tree, finds Cabal files, and extracts:

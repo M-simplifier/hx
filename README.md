@@ -190,4 +190,5 @@ See:
 - [CONTRIBUTING.md](CONTRIBUTING.md)
 - [MAINTAINERS.md](MAINTAINERS.md)
 - [docs/architecture.md](docs/architecture.md)
+- [docs/dx-philosophy.md](docs/dx-philosophy.md)
 - [docs/roadmap.md](docs/roadmap.md)
