@@ -203,6 +203,10 @@ testCiJsonUsesDetectedFastLinker =
                     "ci JSON build command"
                     "\"command\":[\"cabal\",\"build\",\"--ghc-option=-optl-fuse-ld=mold\",\"all\"]"
                     (capturedStdout captured)
+                assertContains
+                    "ci JSON mold warning"
+                    "Warning: GHC may print `Warning: Couldn't figure out linker information!` when using `mold`"
+                    (capturedStderr captured)
                 assertContains "ci JSON stderr linker summary" "Linker: auto-selecting `mold` for this invocation" (capturedStderr captured)
 
 testLinkerUseWritesAndClearsLocalConfig :: IO ()
@@ -210,6 +214,13 @@ testLinkerUseWritesAndClearsLocalConfig =
     withSampleProject $ \projectDir ->
         withMockToolPath ["ghc", "cabal"] [("mold", fakeMoldScript)] $
             withCurrentDirectory projectDir $ do
+                initialStatusCaptured <- captureAction (withArgs ["linker", "status", "--json"] run)
+                assertExit "linker initial status exit" ExitSuccess (capturedExit initialStatusCaptured)
+                assertContains
+                    "linker initial status warning"
+                    "\"warnings\":[\"GHC may print"
+                    (capturedStdout initialStatusCaptured)
+
                 useCaptured <- captureAction (withArgs ["linker", "use", "mold", "--apply"] run)
                 assertExit "linker use exit" ExitSuccess (capturedExit useCaptured)
                 assertContains "linker use output" "Applied linker setting to cabal.project.local." (capturedStdout useCaptured)

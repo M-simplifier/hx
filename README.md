@@ -113,6 +113,9 @@ hx ci
 `hx build`, `hx run`, `hx ci`, and `hx test` share the same linker preflight.
 If the current project has no explicit linker selection and `mold` or `ld.lld`
 is on `PATH`, `hx` passes the matching GHC option for that invocation.
+Some GHC versions print `Warning: Couldn't figure out linker information!` when
+linking with `mold`; `hx` surfaces that caveat before running Cabal so it is not
+mistaken for a fatal hx error when Cabal exits successfully.
 
 Inspect the current decision:
 

@@ -4,9 +4,11 @@ import Control.Exception (evaluate)
 import Control.Monad (when)
 import Data.List (intercalate, isInfixOf, isPrefixOf)
 import Hx.Command.CabalSupport
-    ( decideLinkerPlan
+    ( LinkerPlan (AutoSelectFastLinker)
+    , decideLinkerPlan
     , fuseLdValue
     , linkerArgs
+    , linkerPlanWarnings
     , renderLinkerPlan
     )
 import Hx.Command.Doctor
@@ -186,6 +188,7 @@ renderLinkerStatus snapshot localConfig =
         , "Fast linkers: " <> renderList (availableFastLinkerNames snapshot)
         , "Current plan: " <> renderLinkerPlan snapshot plan
         , "Invocation args: " <> renderList (linkerArgs plan)
+        , "Warnings: " <> renderList (linkerPlanWarnings plan)
         , "Local config: " <> renderLocalConfig localConfig
         , "Managed commands: hx build, hx run, hx ci, hx test"
         , ""
@@ -202,6 +205,7 @@ linkerStatusToJson snapshot localConfig =
         , ("availableFastLinkers", jsonArray (map jsonString (availableFastLinkerNames snapshot)))
         , ("plan", jsonString (renderLinkerPlan snapshot plan))
         , ("linkerArgs", jsonArray (map jsonString (linkerArgs plan)))
+        , ("warnings", jsonArray (map jsonString (linkerPlanWarnings plan)))
         , ("localConfigPath", jsonString localConfigPath)
         , ("localConfigExists", jsonBool (localExists localConfig))
         , ("localConfigManaged", jsonBool (hasManagedBlock localConfig))
@@ -216,6 +220,7 @@ renderUsePlan snapshot localConfig plan =
         , "Target linker: " <> useTarget plan
         , "Mode: " <> if useApply plan then "apply" else "plan only"
         , "Current plan: " <> renderLinkerPlan snapshot (decideLinkerPlan snapshot)
+        , "Warnings: " <> renderList (linkerPlanWarnings (AutoSelectFastLinker (useTarget plan)))
         , "Local config: " <> renderLocalConfig localConfig
         , "Side effects: " <> renderList (useSideEffects plan)
         , "Managed block:"
@@ -234,6 +239,7 @@ usePlanToJson snapshot localConfig plan =
         , ("localConfigExists", jsonBool (localExists localConfig))
         , ("localConfigManaged", jsonBool (hasManagedBlock localConfig))
         , ("currentPlan", jsonString (renderLinkerPlan snapshot (decideLinkerPlan snapshot)))
+        , ("warnings", jsonArray (map jsonString (linkerPlanWarnings (AutoSelectFastLinker (useTarget plan)))))
         , ("sideEffects", jsonArray (map jsonString (useSideEffects plan)))
         , ("managedBlock", jsonString (unlines (useBlock plan)))
         ]
