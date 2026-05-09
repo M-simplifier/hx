@@ -16,7 +16,20 @@ Included:
 - `hx test`
 - `hx doctor`
 - `hx ci`
+- `hx linker`
 - JSON plans and evidence output for AI operators
+
+## M0.5: Linker DX
+
+Status: implemented as a dogfood-driven pre-beta improvement.
+
+Included:
+
+- shared fast-linker preflight for `hx build`, `hx run`, `hx ci`, and `hx test`
+- automatic per-invocation use of `mold` or `ld.lld` when available
+- `hx linker status`
+- `hx linker use ... --apply` and `hx linker clear --apply` for hx-managed
+  `cabal.project.local` persistence
 
 ## M1: Project Mutation Trust
 
@@ -39,7 +52,7 @@ Likely work:
 
 - `hx adopt` or equivalent adoption report
 - native dependency guidance from actual field projects
-- linker and runtime profile recommendations as plans
+- broader linker and runtime profile recommendations as plans
 - workspace-aware status summaries
 
 ## M3: Toolchain And Editor Plane

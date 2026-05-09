@@ -37,6 +37,7 @@
 cd my-app
 hx add text --plan
 hx add text --apply
+hx linker status
 hx run
 hx ci --json</code></pre>
       </section>
@@ -49,6 +50,7 @@ hx ci --json</code></pre>
         <pre class="wide-code"><code>cabal install exe:hx --installdir="$HOME/.local/bin" --overwrite-policy=always
 hx help
 hx doctor
+hx linker status
 hx ci</code></pre>
       </section>
 
@@ -63,6 +65,7 @@ hx ci</code></pre>
         </div>
         <pre class="wide-code"><code>hx status --json
 hx add aeson --target=exe:server --plan --json
+hx linker use auto --plan --json
 hx doctor --json</code></pre>
       </section>
 
@@ -72,7 +75,7 @@ hx doctor --json</code></pre>
           <h2>Pre-beta means narrow claims.</h2>
         </div>
         <ul class="status-list">
-          <li>Implemented: init, status, add, run, test, doctor, ci.</li>
+          <li>Implemented: init, status, add, linker, run, test, doctor, ci.</li>
           <li>Claimed: Cabal-first lifecycle command plane.</li>
           <li>Not claimed: Cabal replacement, Hackage replacement, Stack-first support, production toolchain management.</li>
         </ul>

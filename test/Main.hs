@@ -14,6 +14,7 @@ import System.Directory
     , createDirectory
     , createDirectoryIfMissing
     , createFileLink
+    , doesFileExist
     , findExecutable
     , getPermissions
     , getTemporaryDirectory
@@ -68,6 +69,8 @@ tests =
     , TestCase "init plan JSON" testInitPlanJson
     , TestCase "status JSON reports project components" testStatusJson
     , TestCase "doctor JSON ignores generated target export" testDoctorJsonIgnoresTarget
+    , TestCase "ci JSON uses detected fast linker" testCiJsonUsesDetectedFastLinker
+    , TestCase "linker use writes and clears local config" testLinkerUseWritesAndClearsLocalConfig
     , TestCase "add plan reports dependency side effect" testAddPlan
     , TestCase "add apply updates cabal file" testAddApply
     , TestCase "build blocks when pkg-config tool is missing" testBuildBlocksWhenPkgConfigToolMissing
@@ -187,6 +190,41 @@ testDoctorJsonIgnoresTarget =
         assertContains "doctor JSON schema" "\"schemaVersion\":\"hx.diagnostics.v1\"" (capturedStdout captured)
         assertContains "doctor JSON root cabal file" "\"packageFiles\":[\"run-sample.cabal\"]" (capturedStdout captured)
         assertNotContains "doctor JSON target export cabal file" "target/public-export/hx/copied.cabal" (capturedStdout captured)
+
+testCiJsonUsesDetectedFastLinker :: IO ()
+testCiJsonUsesDetectedFastLinker =
+    withSampleProject $ \projectDir ->
+        withMockToolPath ["ghc"] [("cabal", fakeSuccessfulCabalScript), ("mold", fakeMoldScript)] $
+            withCurrentDirectory projectDir $ do
+                captured <- captureAction (withArgs ["ci", "--json"] run)
+                assertExit "ci JSON fast linker exit" ExitSuccess (capturedExit captured)
+                assertContains "ci JSON linker args" "\"linkerArgs\":[\"--ghc-option=-optl-fuse-ld=mold\"]" (capturedStdout captured)
+                assertContains
+                    "ci JSON build command"
+                    "\"command\":[\"cabal\",\"build\",\"--ghc-option=-optl-fuse-ld=mold\",\"all\"]"
+                    (capturedStdout captured)
+                assertContains "ci JSON stderr linker summary" "Linker: auto-selecting `mold` for this invocation" (capturedStderr captured)
+
+testLinkerUseWritesAndClearsLocalConfig :: IO ()
+testLinkerUseWritesAndClearsLocalConfig =
+    withSampleProject $ \projectDir ->
+        withMockToolPath ["ghc", "cabal"] [("mold", fakeMoldScript)] $
+            withCurrentDirectory projectDir $ do
+                useCaptured <- captureAction (withArgs ["linker", "use", "mold", "--apply"] run)
+                assertExit "linker use exit" ExitSuccess (capturedExit useCaptured)
+                assertContains "linker use output" "Applied linker setting to cabal.project.local." (capturedStdout useCaptured)
+                contents <- readStrictFile (projectDir </> "cabal.project.local")
+                assertContains "linker use marker" "-- hx linker: begin" contents
+                assertContains "linker use flag" "ghc-options: -optl-fuse-ld=mold" contents
+
+                statusCaptured <- captureAction (withArgs ["linker", "status", "--json"] run)
+                assertExit "linker status exit" ExitSuccess (capturedExit statusCaptured)
+                assertContains "linker status managed" "\"localConfigManaged\":true" (capturedStdout statusCaptured)
+
+                clearCaptured <- captureAction (withArgs ["linker", "clear", "--apply"] run)
+                assertExit "linker clear exit" ExitSuccess (capturedExit clearCaptured)
+                exists <- doesFileExist (projectDir </> "cabal.project.local")
+                assertEqual "linker clear removes local-only file" "False" (show exists)
 
 testAddPlan :: IO ()
 testAddPlan =
@@ -480,6 +518,24 @@ fakeFailingPkgConfigScript =
         , "  exit 1"
         , "fi"
         , "exit 1"
+        ]
+
+fakeSuccessfulCabalScript :: String
+fakeSuccessfulCabalScript =
+    unlines
+        [ "#!/bin/sh"
+        , "if [ \"$1\" = \"--numeric-version\" ]; then"
+        , "  echo 3.12.1.0"
+        , "  exit 0"
+        , "fi"
+        , "exit 0"
+        ]
+
+fakeMoldScript :: String
+fakeMoldScript =
+    unlines
+        [ "#!/bin/sh"
+        , "echo mold 2.0.0"
         ]
 
 safeClose :: Handle -> IO ()

@@ -63,6 +63,7 @@ executable hx
         Hx.CLI
         Hx.Command.Doctor
         Hx.Command.Init
+        Hx.Command.Linker
         Hx.Command.Run
         Hx.Command.Status
         Hx.Json
@@ -91,6 +92,7 @@ test-suite hx-smoke
         Hx.CLI
         Hx.Command.Doctor
         Hx.Command.Init
+        Hx.Command.Linker
         Hx.Command.Run
         Hx.Command.Status
         Hx.Json

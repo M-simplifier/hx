@@ -32,7 +32,10 @@ today.
 
 ## Native dependencies and linkers
 
-- `hx doctor` / `hx build` provide actionable `pkg-config` and linker guidance,
-  but package-name heuristics are still curated rather than exhaustive
+- `hx doctor`, `hx linker`, `hx build`, `hx run`, `hx ci`, and `hx test`
+  provide actionable `pkg-config` and linker guidance, but package-name
+  heuristics are still curated rather than exhaustive
+- `hx linker use` writes only an hx-managed local block in
+  `cabal.project.local`; it does not rewrite arbitrary existing linker settings
 - Host-specific linker and native-library edge cases beyond the current fixture
   set may still appear in real projects

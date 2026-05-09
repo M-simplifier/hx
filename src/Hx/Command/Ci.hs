@@ -1,6 +1,14 @@
 module Hx.Command.Ci (runCi, runTest) where
 
 import Data.List (intercalate)
+import Hx.Command.CabalSupport
+    ( linkerArgs
+    , preflightLinkerPlan
+    , preflightWarnings
+    , renderLinkerPlan
+    , runCabalPreflight
+    )
+import Hx.Command.Doctor (inspectDiagnostics)
 import Hx.Json (jsonArray, jsonNumber, jsonObject, jsonString)
 import System.Exit (ExitCode (..), die, exitWith)
 import System.IO (hFlush, hPutStr, hPutStrLn, stderr, stdout)
@@ -15,27 +23,40 @@ runCi :: [String] -> IO ()
 runCi args =
     if any (`elem` ["help", "--help", "-h"]) args
         then putStrLn ciUsage
-        else runCommandSet "hx.ci.v1" ciCommands args
+        else runCommandSet "hx.ci.v1" "hx ci" ciCommands args
 
 runTest :: [String] -> IO ()
 runTest args =
     if any (`elem` ["help", "--help", "-h"]) args
         then putStrLn testUsage
-        else runCommandSet "hx.test.v1" [["cabal", "test", "all"]] args
+        else runCommandSet "hx.test.v1" "hx test" testCommands args
 
-runCommandSet :: String -> [[String]] -> [String] -> IO ()
-runCommandSet schema commands args =
+runCommandSet :: String -> String -> ([String] -> [[String]]) -> [String] -> IO ()
+runCommandSet schema label commandFactory args =
     case filter (/= "--json") args of
         [] -> do
-            if "--json" `elem` args
-                then do
-                    results <- runCommandsForJson commands
-                    putStrLn (commandResultsToJson schema results)
-                    exitWith (combinedExitCode results)
-                else do
-                    results <- runCommands commands
-                    putStrLn (renderCommandResults results)
-                    exitWith (combinedExitCode results)
+            snapshot <- inspectDiagnostics
+            case runCabalPreflight snapshot of
+                Left message ->
+                    die message
+                Right preflight -> do
+                    let selectedLinkerArgs = linkerArgs (preflightLinkerPlan preflight)
+                        commands = commandFactory selectedLinkerArgs
+                        linkerSummary = renderLinkerPlan snapshot (preflightLinkerPlan preflight)
+                    if "--json" `elem` args
+                        then do
+                            mapM_ (hPutStrLn stderr . ("Warning: " <>)) (preflightWarnings preflight)
+                            hPutStrLn stderr ("Linker: " <> linkerSummary)
+                            results <- runCommandsForJson commands
+                            putStrLn (commandResultsToJson schema linkerSummary selectedLinkerArgs results)
+                            exitWith (combinedExitCode results)
+                        else do
+                            putStrLn label
+                            mapM_ (putStrLn . ("Warning: " <>)) (preflightWarnings preflight)
+                            putStrLn ("Linker: " <> linkerSummary)
+                            results <- runCommands commands
+                            putStrLn (renderCommandResults results)
+                            exitWith (combinedExitCode results)
         unknown : _ -> die ("Unknown option: " <> unknown)
 
 runCommandsForJson :: [[String]] -> IO [CommandResult]
@@ -100,11 +121,13 @@ renderCommandResult result =
         <> ": "
         <> renderExitCode (resultExitCode result)
 
-commandResultsToJson :: String -> [CommandResult] -> String
-commandResultsToJson schema results =
+commandResultsToJson :: String -> String -> [String] -> [CommandResult] -> String
+commandResultsToJson schema linkerSummary selectedLinkerArgs results =
     jsonObject
         [ ("schemaVersion", jsonString schema)
         , ("status", jsonString (if combinedExitCode results == ExitSuccess then "pass" else "fail"))
+        , ("linker", jsonString linkerSummary)
+        , ("linkerArgs", jsonArray (map jsonString selectedLinkerArgs))
         , ("results", jsonArray (map commandResultToJson results))
         ]
 
@@ -128,10 +151,15 @@ renderExitCode exitCode =
         ExitSuccess -> "pass"
         ExitFailure code -> "fail (" <> show code <> ")"
 
-ciCommands :: [[String]]
-ciCommands =
-    [ ["cabal", "build", "all"]
-    , ["cabal", "test", "all"]
+ciCommands :: [String] -> [[String]]
+ciCommands selectedLinkerArgs =
+    [ ["cabal", "build"] ++ selectedLinkerArgs ++ ["all"]
+    , ["cabal", "test"] ++ selectedLinkerArgs ++ ["all"]
+    ]
+
+testCommands :: [String] -> [[String]]
+testCommands selectedLinkerArgs =
+    [ ["cabal", "test"] ++ selectedLinkerArgs ++ ["all"]
     ]
 
 ciUsage :: String

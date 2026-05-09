@@ -3,6 +3,7 @@ module Hx.Command.CabalSupport
     , CabalProfile (..)
     , LinkerPlan (..)
     , buildProfileArgs
+    , decideLinkerPlan
     , fuseLdValue
     , linkerArgs
     , profileRuntimeDefaults
